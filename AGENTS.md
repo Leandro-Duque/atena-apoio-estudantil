@@ -28,3 +28,7 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project rules
+- Auth gate lives in `src/routes/_authenticated/route.tsx` (client-only); staff-only pages check the `equipe` role from `user_roles` in `beforeLoad`, and RLS enforces it server-side.
+- Privacy copy is shared in `src/components/atena/PrivacyText.tsx` so the notice and "Meus dados" never diverge.
