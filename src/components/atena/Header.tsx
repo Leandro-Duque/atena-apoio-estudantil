@@ -3,11 +3,14 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession, isEquipe } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
+import { useServerFn } from "@tanstack/react-start";
+import { encerrarSessao } from "@/lib/memoria.functions";
 
 export function Header() {
   const { session } = useSession();
   const [equipe, setEquipe] = useState(false);
   const navigate = useNavigate();
+  const encerrar = useServerFn(encerrarSessao);
   useEffect(() => {
     if (session?.user) isEquipe(session.user.id).then(setEquipe);
     else setEquipe(false);
@@ -32,6 +35,7 @@ export function Header() {
             <Button
               variant="outline"
               onClick={async () => {
+                try { await encerrar(); } catch (e) { console.error(e); }
                 await supabase.auth.signOut();
                 navigate({ to: "/auth", replace: true });
               }}

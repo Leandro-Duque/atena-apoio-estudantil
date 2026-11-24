@@ -65,6 +65,21 @@ export type Database = {
         }
         Relationships: []
       }
+      equipe_setores: {
+        Row: {
+          setor: string
+          user_id: string
+        }
+        Insert: {
+          setor: string
+          user_id: string
+        }
+        Update: {
+          setor?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       feedbacks: {
         Row: {
           comentario: string | null
@@ -168,6 +183,7 @@ export type Database = {
           id: string
           matricula: string
           nome: string
+          semestre: string | null
         }
         Insert: {
           aceite_privacidade_em?: string | null
@@ -177,6 +193,7 @@ export type Database = {
           id: string
           matricula?: string
           nome?: string
+          semestre?: string | null
         }
         Update: {
           aceite_privacidade_em?: string | null
@@ -186,13 +203,43 @@ export type Database = {
           id?: string
           matricula?: string
           nome?: string
+          semestre?: string | null
+        }
+        Relationships: []
+      }
+      preferencias: {
+        Row: {
+          atualizado_em: string
+          canal_preferido: string | null
+          lembretes_ativos: boolean | null
+          memoria_longa_ativa: boolean
+          nivel_linguagem: string | null
+          user_id: string
+        }
+        Insert: {
+          atualizado_em?: string
+          canal_preferido?: string | null
+          lembretes_ativos?: boolean | null
+          memoria_longa_ativa?: boolean
+          nivel_linguagem?: string | null
+          user_id: string
+        }
+        Update: {
+          atualizado_em?: string
+          canal_preferido?: string | null
+          lembretes_ativos?: boolean | null
+          memoria_longa_ativa?: boolean
+          nivel_linguagem?: string | null
+          user_id?: string
         }
         Relationships: []
       }
       protocolos: {
         Row: {
           criado_em: string
+          detalhes_restritos: string | null
           id: string
+          restrito: boolean
           resumo: string
           setor: string
           status: string
@@ -201,7 +248,9 @@ export type Database = {
         }
         Insert: {
           criado_em?: string
+          detalhes_restritos?: string | null
           id?: string
+          restrito?: boolean
           resumo: string
           setor: string
           status?: string
@@ -210,7 +259,9 @@ export type Database = {
         }
         Update: {
           criado_em?: string
+          detalhes_restritos?: string | null
           id?: string
+          restrito?: boolean
           resumo?: string
           setor?: string
           status?: string
@@ -218,6 +269,41 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      resumos_conversa: {
+        Row: {
+          conversa_id: string | null
+          criado_em: string
+          expira_em: string
+          id: string
+          resumo: string
+          user_id: string
+        }
+        Insert: {
+          conversa_id?: string | null
+          criado_em?: string
+          expira_em?: string
+          id?: string
+          resumo: string
+          user_id: string
+        }
+        Update: {
+          conversa_id?: string | null
+          criado_em?: string
+          expira_em?: string
+          id?: string
+          resumo?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resumos_conversa_conversa_id_fkey"
+            columns: ["conversa_id"]
+            isOneToOne: false
+            referencedRelation: "conversas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -247,6 +333,11 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      mascarar_texto: { Args: { t: string }; Returns: string }
+      pertence_setor: {
+        Args: { _setor: string; _user_id: string }
         Returns: boolean
       }
     }

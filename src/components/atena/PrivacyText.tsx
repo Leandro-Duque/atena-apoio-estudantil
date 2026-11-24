@@ -24,8 +24,25 @@ export function PrivacyText() {
       <section>
         <h2 className="text-xl font-bold">Por quanto tempo</h2>
         <p>
-          Conversas ficam guardadas por até 12 meses. Protocolos de atendimento ficam guardados por até 5 anos,
-          como registro administrativo. Depois disso, são apagados.
+          As mensagens da conversa (só as últimas 10) são apagadas quando a conversa ou a sessão termina. Fica
+          apenas um resumo de até 3 linhas, sem dados sensíveis, guardado por 90 dias e apagado automaticamente.
+          Preferências (como canal preferido) só são lembradas se você ligar essa opção. Protocolos de
+          atendimento ficam guardados por até 5 anos, como registro administrativo.
+        </p>
+      </section>
+      <section>
+        <h2 className="text-xl font-bold">Dados pessoais e sensíveis</h2>
+        <p>
+          CPF, telefone, e-mail e números de documento são escondidos antes de qualquer resumo ou registro ser
+          gravado. Informações de saúde ou deficiência nunca entram nos resumos nem nas preferências: só aparecem
+          em um protocolo restrito, visto apenas pelo setor responsável.
+        </p>
+      </section>
+      <section>
+        <h2 className="text-xl font-bold">Nenhum outro uso</h2>
+        <p>
+          Suas conversas <strong>não são usadas para treinar modelos de IA</strong> nem para qualquer outra
+          finalidade além de orientar e encaminhar você.
         </p>
       </section>
       <section>
@@ -35,7 +52,7 @@ export function PrivacyText() {
       <section>
         <h2 className="text-xl font-bold">Como pedir a exclusão</h2>
         <p>
-          Na área <strong>“Meus dados e privacidade”</strong>, clique em “Pedir exclusão dos meus dados”. Você
+          Na área <strong>“Meus dados e privacidade”</strong>, você pode apagar seus resumos ou clicar em “Solicitar exclusão da conta”. Você
           também pode escrever para <strong>privacidade@exemplo.edu.br</strong>. Respondemos em até 15 dias.
         </p>
       </section>

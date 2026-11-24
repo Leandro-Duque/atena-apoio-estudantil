@@ -8,6 +8,13 @@
       "when": 1795529708266,
       "tag": "0000_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1795531387518,
+      "tag": "0001_memoria_privacidade",
+      "breakpoints": true
     }
   ]
 }
