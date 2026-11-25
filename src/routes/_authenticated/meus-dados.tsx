@@ -22,12 +22,12 @@ export const Route = createFileRoute("/_authenticated/meus-dados")({
 
 const MAPA = [
   ["Últimas 10 mensagens da conversa", "Dar contexto à resposta da Atena", "Apagadas ao encerrar a conversa ou sair"],
-  ["Resumo da conversa (até 3 linhas, sem dados sensíveis)", "Lembrar o tema, protocolo e pendências", "90 dias, apagado automaticamente"],
+  ["Resumo da conversa (até 3 linhas, sem dados sensíveis)", "Lembrar o tema, protocolo e pendências", "90 dias; indisponível ao vencer e removido na limpeza diária"],
   ["Preferências (canal, lembretes, nível de linguagem)", "Adaptar o atendimento a você", "Só se você ligar; até você desligar"],
   ["Perfil (nome, e-mail, matrícula, curso, semestre)", "Identificar você e orientar sobre seu curso", "Enquanto a conta existir"],
   ["Protocolos de atendimento", "Encaminhar seu caso a uma pessoa da equipe", "Até 5 anos (registro administrativo)"],
   ["Protocolos restritos (saúde ou deficiência)", "Atendimento pelo setor competente, somente", "Até 5 anos, visíveis só ao setor"],
-  ["Registros de ações (sem dados pessoais)", "Segurança e auditoria", "Até 12 meses"],
+  ["Registros de ações (sem dados pessoais)", "Segurança e auditoria", "Enquanto a conta existir"],
 ];
 
 function MeusDados() {
@@ -40,7 +40,7 @@ function MeusDados() {
       const [perfil, resumos, protocolos, pref] = await Promise.all([
         supabase.from("perfis").select("*").eq("id", userId).maybeSingle(),
         supabase.from("resumos_conversa").select("*").eq("user_id", userId).order("criado_em", { ascending: false }),
-        supabase.from("protocolos").select("*").eq("user_id", userId).order("criado_em", { ascending: false }),
+        supabase.from("protocolos").select("id,user_id,tipo,status,setor,resumo,criado_em,restrito").eq("user_id", userId).order("criado_em", { ascending: false }),
         supabase.from("preferencias").select("*").eq("user_id", userId).maybeSingle(),
       ]);
       return { perfil: perfil.data, resumos: resumos.data ?? [], protocolos: protocolos.data ?? [], pref: pref.data };
@@ -67,15 +67,20 @@ function MeusDados() {
   }
 
   async function baixar() {
-    const tabelas = ["conversas", "mensagens", "protocolos", "feedbacks", "resumos_conversa", "preferencias"] as const;
+    const tabelas = ["conversas", "mensagens", "feedbacks", "resumos_conversa", "preferencias"] as const;
     const res = await Promise.all(tabelas.map((t) => supabase.from(t).select("*").eq("user_id", userId)));
     const perfil = await supabase.from("perfis").select("*").eq("id", userId);
-    const out: Record<string, unknown> = { perfil: perfil.data };
+    if (perfil.error || res.some((r) => r.error)) { toast.error("Não foi possível baixar todos os dados. Tente novamente."); return; }
+    const protocolos = await supabase.from("protocolos").select("id,user_id,tipo,status,setor,resumo,criado_em,restrito").eq("user_id", userId);
+    const logs = await supabase.from("logs_acoes").select("*").eq("user_id", userId);
+    if (protocolos.error || logs.error) { toast.error("Não foi possível baixar todos os dados."); return; }
+    const out: Record<string, unknown> = { perfil: perfil.data, protocolos: protocolos.data, logs_acoes: logs.data };
     tabelas.forEach((t, i) => (out[t] = res[i]?.data));
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([JSON.stringify(out, null, 2)], { type: "application/json" }));
     a.download = "meus-dados-atena.json";
     a.click();
+    URL.revokeObjectURL(a.href);
     await registrarLog("download_dados");
   }
 
@@ -101,7 +106,7 @@ function MeusDados() {
         <h2 className="text-2xl font-bold">Meu perfil</h2>
         <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-lg">
           <dt className="font-semibold">Nome</dt><dd>{p?.nome}</dd>
-          <dt className="font-semibold">E-mail</dt><dd>{p?.email}</dd>
+          <dt className="font-semibold">E-mail</dt><dd className="break-all">{p?.email}</dd>
           <dt className="font-semibold">Matrícula</dt><dd>{p?.matricula} (fictícia)</dd>
           <dt className="font-semibold">Curso</dt><dd>{p?.curso}</dd>
           <dt className="font-semibold">Semestre</dt><dd>{p?.semestre ?? "não informado"}</dd>

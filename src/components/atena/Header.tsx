@@ -5,12 +5,16 @@ import { useSession, isEquipe } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { useServerFn } from "@tanstack/react-start";
 import { encerrarSessao } from "@/lib/memoria.functions";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 export function Header() {
   const { session } = useSession();
   const [equipe, setEquipe] = useState(false);
   const navigate = useNavigate();
   const encerrar = useServerFn(encerrarSessao);
+  const queryClient = useQueryClient();
+  const [saindo, setSaindo] = useState(false);
   useEffect(() => {
     if (session?.user) isEquipe(session.user.id).then(setEquipe);
     else setEquipe(false);
@@ -34,13 +38,22 @@ export function Header() {
             {equipe && <Link to="/admin" className={link}>Painel da equipe</Link>}
             <Button
               variant="outline"
+              disabled={saindo}
               onClick={async () => {
-                try { await encerrar(); } catch (e) { console.error(e); }
-                await supabase.auth.signOut();
-                navigate({ to: "/auth", replace: true });
+                setSaindo(true);
+                try {
+                  await encerrar();
+                  await queryClient.cancelQueries();
+                  queryClient.clear();
+                  const { error } = await supabase.auth.signOut();
+                  if (error) throw error;
+                  await navigate({ to: "/auth", replace: true });
+                } catch {
+                  toast.error("Não foi possível sair com segurança. Tente novamente.");
+                } finally { setSaindo(false); }
               }}
             >
-              Sair
+              {saindo ? "Saindo…" : "Sair"}
             </Button>
           </>
         ) : (

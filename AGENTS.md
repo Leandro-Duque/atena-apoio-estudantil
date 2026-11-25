@@ -32,3 +32,6 @@ use the editor.
 ## Project rules
 - Auth gate lives in `src/routes/_authenticated/route.tsx` (client-only); staff-only pages check the `equipe` role from `user_roles` in `beforeLoad`, and RLS enforces it server-side.
 - Privacy copy is shared in `src/components/atena/PrivacyText.tsx` so the notice and "Meus dados" never diverge.
+- Short chat memory must use a per-conversation browser RAM instance from `memoria-curta`; never persist raw messages, so closing the tab discards them.
+- Summary writes use the owner-checked `salvar_resumo_seguro` RPC and allowlisted categories; AI sees categories only, preventing personal or sensitive text persistence.
+- Restricted protocol content lives in `protocolos_restritos` with sector membership RLS; public protocol metadata excludes the deprecated detail column.

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { mascarar } from "./privacidade";
 
 export function useSession() {
   const [session, setSession] = useState<Session | null>(null);
@@ -29,5 +30,8 @@ export async function isEquipe(userId: string) {
 export async function registrarLog(acao: string, detalhes?: Record<string, unknown>) {
   const { data } = await supabase.auth.getUser();
   if (!data.user) return;
-  await supabase.from("logs_acoes").insert({ user_id: data.user.id, acao, detalhes: (detalhes ?? null) as never });
+  // Não gravar texto livre nem dados de conversa nos logs.
+  void detalhes;
+  const { error } = await supabase.from("logs_acoes").insert({ user_id: data.user.id, acao: mascarar(acao), detalhes: null });
+  if (error) throw new Error("Não foi possível registrar a ação.");
 }

@@ -24,7 +24,7 @@ function Admin() {
     queryFn: async () => {
       const [docs, prot] = await Promise.all([
         supabase.from("documentos_oficiais").select("id,titulo,tipo,data_vigencia").order("titulo"),
-        supabase.from("protocolos").select("*").order("criado_em", { ascending: false }).limit(20),
+        supabase.from("protocolos").select("id,tipo,status,setor,resumo,criado_em,restrito").order("criado_em", { ascending: false }).limit(20),
       ]);
       return { docs: docs.data ?? [], prot: prot.data ?? [] };
     },

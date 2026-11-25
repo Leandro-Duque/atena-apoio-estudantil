@@ -270,6 +270,32 @@ export type Database = {
         }
         Relationships: []
       }
+      protocolos_restritos: {
+        Row: {
+          conteudo: string
+          protocolo_id: string
+          setor: string
+        }
+        Insert: {
+          conteudo: string
+          protocolo_id: string
+          setor: string
+        }
+        Update: {
+          conteudo?: string
+          protocolo_id?: string
+          setor?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "protocolos_restritos_protocolo_id_fkey"
+            columns: ["protocolo_id"]
+            isOneToOne: true
+            referencedRelation: "protocolos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       resumos_conversa: {
         Row: {
           conversa_id: string | null
@@ -339,6 +365,10 @@ export type Database = {
       pertence_setor: {
         Args: { _setor: string; _user_id: string }
         Returns: boolean
+      }
+      salvar_resumo_seguro: {
+        Args: { _conversa_id: string; _temas: string[] }
+        Returns: undefined
       }
     }
     Enums: {

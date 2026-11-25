@@ -15,6 +15,13 @@
       "when": 1795531387518,
       "tag": "0001_memoria_privacidade",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795567427258,
+      "tag": "0002_reforcar_privacidade_memorias",
+      "breakpoints": true
     }
   ]
 }

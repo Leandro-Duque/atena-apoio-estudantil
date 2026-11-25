@@ -1,85 +1,64 @@
 import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { generateResponse, GatewayError } from "@lovable.dev/ai-gateway";
-import { contemDadoSensivel, limparResumo, mascarar, LIMITE_MEMORIA_CURTA } from "./privacidade";
+import { extrairTemas, LIMITE_MEMORIA_CURTA, mascarar } from "./privacidade";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Sb = any;
+const encerramento = z.object({
+  conversaId: z.string().uuid(),
+  mensagens: z.array(z.object({ papel: z.enum(["user", "assistant"]), conteudo: z.string().max(10000) })).max(LIMITE_MEMORIA_CURTA).default([]),
+});
 
-async function resumirComIA(transcricao: string): Promise<string> {
-  try {
-    const r = await generateResponse({
-      model: "openai/gpt-6-astra",
-      instructions:
-        "Resuma a conversa em no máximo 3 linhas, em português: 'Tema: ...', 'Protocolo: ...', 'Pendências: ...'. " +
-        "NUNCA inclua dados sensíveis (saúde, renda, deficiência, religião, orientação sexual, raça, política) nem dados pessoais (nomes, CPF, telefone, e-mail, números).",
-      input: transcricao,
-    });
-    const out = (r as { output?: Array<{ type: string; content?: Array<{ type: string; text?: string }> }> }).output ?? [];
-    return out.flatMap((o) => o.content ?? []).filter((c) => c.type === "output_text").map((c) => c.text ?? "").join("\n");
-  } catch (e) {
-    if (e instanceof GatewayError) console.error("resumo IA falhou", e.code, e.ids);
-    else console.error(e);
-    return "Tema: conversa com a Atena\nProtocolo: verificar em Meus protocolos\nPendências: —";
-  }
-}
-
-async function encerrar(supabase: Sb, userId: string, conversaId: string) {
-  const { data: msgs, error } = await supabase
-    .from("mensagens").select("papel,conteudo").eq("conversa_id", conversaId)
-    .order("criado_em", { ascending: false }).limit(LIMITE_MEMORIA_CURTA);
-  if (error) throw new Error("Falha ao ler a conversa");
-  if (msgs?.length) {
-    const { data: prot } = await supabase.from("protocolos").select("tipo,status").eq("user_id", userId)
-      .order("criado_em", { ascending: false }).limit(1);
-    const transcricao = mascarar(
-      (msgs as Array<{ papel: string; conteudo: string }>).reverse()
-        .map((m) => `${m.papel === "user" ? "Estudante" : "Atena"}: ${m.conteudo}`)
-        .filter((l) => !contemDadoSensivel(l)).join("\n"),
-    ) + (prot?.[0] ? `\nÚltimo protocolo: ${prot[0].tipo} (${prot[0].status})` : "");
-    const resumo = limparResumo(await resumirComIA(transcricao));
-    if (resumo) {
-      const ins = await supabase.from("resumos_conversa").insert({ user_id: userId, conversa_id: conversaId, resumo });
-      if (ins.error) throw new Error("Falha ao salvar resumo");
-    }
-  }
-  // Memória curta: apaga as mensagens ao encerrar.
-  const del = await supabase.from("mensagens").delete().eq("conversa_id", conversaId);
-  if (del.error) throw new Error("Falha ao apagar mensagens");
+async function encerrar(sb: SupabaseClient<Database>, userId: string, id: string, textos: string[]) {
+  const conversa = await sb.from("conversas").select("id").eq("id", id).eq("user_id", userId).maybeSingle();
+  if (conversa.error || !conversa.data) throw new Error("Conversa não autorizada.");
+  // A IA nunca recebe a transcrição: apenas categorias acadêmicas permitidas.
+  const temas = extrairTemas(textos);
+  const { selecionarTemas } = await import("./resumo.server");
+  const escolhidos = await selecionarTemas(temas);
+  const result = await sb.rpc("salvar_resumo_seguro", { _conversa_id: id, _temas: escolhidos });
+  if (result.error) throw new Error("Não foi possível encerrar a conversa.");
 }
 
 export const encerrarConversa = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { conversaId: string }) => d)
+  .inputValidator((d: unknown) => encerramento.parse(d))
   .handler(async ({ data, context }) => {
-    await encerrar(context.supabase, context.userId, data.conversaId);
+    await encerrar(context.supabase, context.userId, data.conversaId, data.mensagens.map((m) => m.conteudo));
     return { ok: true };
   });
 
 export const encerrarSessao = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data } = await context.supabase.from("mensagens").select("conversa_id").eq("user_id", context.userId);
-    const ids = [...new Set((data ?? []).map((m: { conversa_id: string }) => m.conversa_id))];
-    for (const id of ids) await encerrar(context.supabase, context.userId, id);
+    // Compatibilidade com o protótipo anterior; o próximo chat usa somente RAM.
+    const { data, error } = await context.supabase.from("mensagens").select("conversa_id,conteudo,criado_em")
+      .eq("user_id", context.userId).order("criado_em", { ascending: false });
+    if (error) throw new Error("Não foi possível encerrar a sessão.");
+    const ids = [...new Set((data ?? []).map((m) => m.conversa_id))];
+    for (const id of ids) {
+      const textos = (data ?? []).filter((m) => m.conversa_id === id).slice(0, LIMITE_MEMORIA_CURTA).map((m) => m.conteudo);
+      await encerrar(context.supabase, context.userId, id, textos);
+    }
     return { encerradas: ids.length };
   });
 
-const SETOR_SENSIVEL = "Núcleo de Acessibilidade / Acolhimento";
-
 export const abrirProtocolo = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { tipo: string; setor: string; resumo: string }) => d)
+  .inputValidator((d: unknown) => z.object({
+    tipo: z.enum(["atendimento", "acessibilidade", "acolhimento", "exclusao_conta"]),
+    setor: z.enum(["Assistência Estudantil", "Núcleo de Acessibilidade", "Acolhimento Psicológico", "Encarregado de Dados (LGPD)"]),
+    resumo: z.string().max(5000),
+  }).parse(d))
   .handler(async ({ data, context }) => {
-    const sensivel = contemDadoSensivel(data.resumo);
+    // Todo texto livre fica restrito: detector por palavras não garante sigilo.
+    const setor = data.tipo === "acessibilidade" ? "Núcleo de Acessibilidade" : data.tipo === "acolhimento" ? "Acolhimento Psicológico" : data.setor;
     const { error } = await context.supabase.from("protocolos").insert({
-      user_id: context.userId,
-      tipo: data.tipo,
-      setor: sensivel ? SETOR_SENSIVEL : data.setor,
-      resumo: sensivel ? "Atendimento com informações restritas ao setor." : mascarar(data.resumo),
-      restrito: sensivel,
-      detalhes_restritos: sensivel ? mascarar(data.resumo) : null,
+      user_id: context.userId, tipo: data.tipo, setor,
+      resumo: "Solicitação de atendimento registrada.", restrito: true,
+      detalhes_restritos: mascarar(data.resumo),
     });
-    if (error) throw new Error("Falha ao abrir protocolo");
-    return { restrito: sensivel };
+    if (error) throw new Error("Não foi possível abrir o protocolo.");
+    return { restrito: true };
   });
