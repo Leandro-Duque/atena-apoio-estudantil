@@ -93,6 +93,10 @@ Toda orientação sobre regras exibe a **fonte** (documento e data de vigência)
 
 https://atena-student-compass.lovable.app
 
+###Link do GitHub para acesso aos arquivos
+
+
+
 ### Banco de dados
 
 As migrações e as regras de acesso devem estar na pasta `supabase/` (se o Lovable as tiver exportado). Se alguma parte do backend existir apenas na plataforma, documente aqui como recriá-la:
