@@ -102,8 +102,8 @@ Toda orientação sobre regras exibe a **fonte** (documento e data de vigência)
 
 ```bash
 # 1. Clonar o repositório
-git clone https://github.com/<seu-usuario>/<nome-do-repositorio>.git
-cd <nome-do-repositorio>
+git clone https://github.com/Leandro-Duque/atena-apoio-estudantil.git
+cd <atena-apoio-estudantil>
 
 # 2. Instalar dependências
 npm install
