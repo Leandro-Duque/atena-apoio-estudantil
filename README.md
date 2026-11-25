@@ -4,7 +4,7 @@
 
 **Aviso:** este é um projeto educacional. A universidade ("Universidade Exemplo"), os editais, os documentos e todos os dados são **fictícios**. Não use dados reais de estudantes neste protótipo.
 
-Projeto desenvolvido para a disciplina **Engenharia de Prompt e Aplicações em IA** (base teórica: Guia de Estudos A1, Unidade 4: arquitetura, privacidade, viés e responsabilidade social).
+Projeto desenvolvido para a disciplina **Tendências em Sistema de Informação** (base teórica: Guia de Estudos A1, Unidade 4: arquitetura, privacidade, viés e responsabilidade social).
 
 ---
 
@@ -15,19 +15,18 @@ Projeto desenvolvido para a disciplina **Engenharia de Prompt e Aplicações em 
 3. [Arquitetura em 4 camadas](#arquitetura-em-4-camadas)
 4. [Tecnologias](#tecnologias)
 5. [Como rodar o projeto](#como-rodar-o-projeto)
-6. [Configuração e segredos](#configuração-e-segredos)
-7. [Engenharia de prompt](#engenharia-de-prompt)
-8. [Memória](#memória)
-9. [Privacidade e LGPD](#privacidade-e-lgpd)
-10. [Viés e equidade](#viés-e-equidade)
-11. [Testes e avaliação](#testes-e-avaliação)
-12. [Melhoria contínua](#melhoria-contínua)
-13. [Decisões éticas](#decisões-éticas)
-14. [Responsabilidade social](#responsabilidade-social)
-15. [Limitações conhecidas](#limitações-conhecidas)
-16. [Roadmap](#roadmap)
-17. [Mapa de conexão com o Guia A1](#mapa-de-conexão-com-o-guia-a1)
-18. [Autoria e licença](#autoria-e-licença)
+6. [Engenharia de prompt](#engenharia-de-prompt)
+7. [Memória](#memória)
+8. [Privacidade e LGPD](#privacidade-e-lgpd)
+9. [Viés e equidade](#viés-e-equidade)
+10. [Testes e avaliação](#testes-e-avaliação)
+11. [Melhoria contínua](#melhoria-contínua)
+12. [Decisões éticas](#decisões-éticas)
+13. [Responsabilidade social](#responsabilidade-social)
+14. [Limitações conhecidas](#limitações-conhecidas)
+15. [Roadmap](#roadmap)
+16. [Mapa de conexão com o Guia A1](#mapa-de-conexão-com-o-guia-a1)
+17. [Autoria e licença](#autoria-e-licença)
 
 ---
 
@@ -83,40 +82,16 @@ Toda orientação sobre regras exibe a **fonte** (documento e data de vigência)
 
 ## Tecnologias
 
-> Ajuste esta seção conforme o que o seu projeto gerou de fato.
-
 - **Front-end:** React + TypeScript (gerado pelo Lovable)
 - **Backend e banco:** Supabase (PostgreSQL, autenticação, funções de servidor e regras de acesso por linha)
-- **IA:** modelo de linguagem chamado por função de servidor (a chave nunca fica no navegador)
+- **IA:** modelo de linguagem chamado por função de servidor
 - **Versionamento:** GitHub, com sincronização nos dois sentidos com o Lovable
 
 ## Como rodar o projeto
 
-### Pré-requisitos
+### Link do Lovable para o projeto
 
-- Node.js (versão LTS)
-- Conta no Supabase (ou acesso ao projeto Supabase já criado)
-- Chave de API de um provedor de modelo de linguagem
-
-### Passos
-
-```bash
-# 1. Clonar o repositório
-git clone https://github.com/Leandro-Duque/atena-apoio-estudantil.git
-cd <atena-apoio-estudantil>
-
-# 2. Instalar dependências
-npm install
-
-# 3. Criar o arquivo de ambiente a partir do exemplo
-cp .env.example .env
-# edite o .env com os valores do seu projeto Supabase
-
-# 4. Rodar em modo de desenvolvimento
-npm run dev
-```
-
-Os comandos acima são os típicos de projetos React com Vite. Confira o `package.json` para os scripts exatos.
+https://atena-student-compass.lovable.app
 
 ### Banco de dados
 
@@ -125,25 +100,6 @@ As migrações e as regras de acesso devem estar na pasta `supabase/` (se o Lova
 - Tabelas: `perfis`, `documentos_oficiais`, `conversas`, `mensagens`, `protocolos`, `feedbacks`, `logs_acoes`
 - **Regras de acesso por linha ativadas** para que cada estudante veja apenas seus próprios dados
 - Dados de exemplo: 6 documentos oficiais fictícios (calendário 2026/2, trancamento, aproveitamento, edital de auxílio alimentação 03/2026, edital de bolsa de permanência 04/2026 e guia de serviços de apoio)
-
-## Configuração e segredos
-
-**Nunca faça commit de chaves ou senhas.** O `.gitignore` deve incluir o `.env`.
-
-Exemplo de `.env.example` (nomes podem variar; confira o arquivo gerado no seu projeto):
-
-```bash
-VITE_SUPABASE_URL=https://<seu-projeto>.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=<chave-publica-do-supabase>
-```
-
-A chave do modelo de linguagem fica **somente** nos *secrets* do Supabase (funções de servidor), por exemplo:
-
-```bash
-supabase secrets set LLM_API_KEY=<sua-chave>
-```
-
-Antes de tornar o repositório público, verifique o histórico do Git para garantir que nenhuma chave foi enviada em commits antigos.
 
 ## Engenharia de prompt
 
@@ -301,7 +257,7 @@ Cada decisão técnica é registrada no **registro de decisões de design** (o q
 
 ## Autoria e licença
 
-- **Autor(a):** _seu nome_
-- **Disciplina:** Engenharia de Prompt e Aplicações em IA (UDF), Profa. Kadidja Valéria
+- **Autores:** Leandro Alcântara Moraes - Leandro Santos Duque da Silva - Leidson Arthur Santana Almeida
+- **Disciplina:** Tendências em Sistemas de Informação (UDF), Profa. Kadidja Valéria
 - **Ano:** 2026
-- **Licença:** escolha uma licença para o código (por exemplo, MIT) e adicione o arquivo `LICENSE`. Os documentos fictícios podem ser usados livremente para fins educacionais.
+- **Licença:** --
