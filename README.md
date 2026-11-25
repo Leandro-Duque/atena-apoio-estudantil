@@ -95,7 +95,7 @@ https://atena-student-compass.lovable.app
 
 ###Link do GitHub para acesso aos arquivos
 
-
+https://github.com/Leandro-Duque/atena-apoio-estudantil
 
 ### Banco de dados
 
