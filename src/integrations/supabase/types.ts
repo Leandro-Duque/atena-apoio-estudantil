@@ -239,6 +239,7 @@ export type Database = {
           criado_em: string
           detalhes_restritos: string | null
           id: string
+          prioridade: string
           restrito: boolean
           resumo: string
           setor: string
@@ -250,6 +251,7 @@ export type Database = {
           criado_em?: string
           detalhes_restritos?: string | null
           id?: string
+          prioridade?: string
           restrito?: boolean
           resumo: string
           setor: string
@@ -261,6 +263,7 @@ export type Database = {
           criado_em?: string
           detalhes_restritos?: string | null
           id?: string
+          prioridade?: string
           restrito?: boolean
           resumo?: string
           setor?: string

@@ -16,6 +16,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedAvisoRouteImport } from './routes/_authenticated/aviso'
 import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
 import { Route as AuthenticatedMeusDadosRouteImport } from './routes/_authenticated/meus-dados'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -51,6 +52,11 @@ const AuthenticatedMeusDadosRoute = AuthenticatedMeusDadosRouteImport.update({
   path: '/meus-dados',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/aviso': typeof AuthenticatedAvisoRoute
   '/chat': typeof AuthenticatedChatRoute
   '/meus-dados': typeof AuthenticatedMeusDadosRoute
+  '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -67,6 +74,7 @@ export interface FileRoutesByTo {
   '/aviso': typeof AuthenticatedAvisoRoute
   '/chat': typeof AuthenticatedChatRoute
   '/meus-dados': typeof AuthenticatedMeusDadosRoute
+  '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -77,12 +85,15 @@ export interface FileRoutesById {
   '/_authenticated/aviso': typeof AuthenticatedAvisoRoute
   '/_authenticated/chat': typeof AuthenticatedChatRoute
   '/_authenticated/meus-dados': typeof AuthenticatedMeusDadosRoute
+  '/api/chat': typeof ApiChatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/admin' | '/aviso' | '/chat' | '/meus-dados'
+  fullPaths:
+    '/' | '/auth' | '/admin' | '/aviso' | '/chat' | '/meus-dados' | '/api/chat'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/admin' | '/aviso' | '/chat' | '/meus-dados'
+  to:
+    '/' | '/auth' | '/admin' | '/aviso' | '/chat' | '/meus-dados' | '/api/chat'
   id:
     | '__root__'
     | '/'
@@ -92,12 +103,14 @@ export interface FileRouteTypes {
     | '/_authenticated/aviso'
     | '/_authenticated/chat'
     | '/_authenticated/meus-dados'
+    | '/api/chat'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiChatRoute: typeof ApiChatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -151,6 +164,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMeusDadosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -175,6 +195,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiChatRoute: ApiChatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

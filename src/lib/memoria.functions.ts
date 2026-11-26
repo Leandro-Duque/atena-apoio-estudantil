@@ -47,18 +47,32 @@ export const encerrarSessao = createServerFn({ method: "POST" })
 export const abrirProtocolo = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({
-    tipo: z.enum(["atendimento", "acessibilidade", "acolhimento", "exclusao_conta"]),
+    tipo: z.enum(["atendimento", "acessibilidade", "acolhimento", "exclusao_conta", "contestacao", "urgencia"]),
     setor: z.enum(["Assistência Estudantil", "Núcleo de Acessibilidade", "Acolhimento Psicológico", "Encarregado de Dados (LGPD)"]),
     resumo: z.string().max(5000),
   }).parse(d))
   .handler(async ({ data, context }) => {
     // Todo texto livre fica restrito: detector por palavras não garante sigilo.
-    const setor = data.tipo === "acessibilidade" ? "Núcleo de Acessibilidade" : data.tipo === "acolhimento" ? "Acolhimento Psicológico" : data.setor;
+    const setor = data.tipo === "acessibilidade" ? "Núcleo de Acessibilidade" : data.tipo === "acolhimento" || data.tipo === "urgencia" ? "Acolhimento Psicológico" : data.setor;
     const { error } = await context.supabase.from("protocolos").insert({
       user_id: context.userId, tipo: data.tipo, setor,
-      resumo: "Solicitação de atendimento registrada.", restrito: true,
+      resumo: data.tipo === "contestacao" ? "Contestação de orientação registrada." : data.tipo === "urgencia" ? "Acolhimento prioritário solicitado." : "Solicitação de atendimento registrada.",
+      restrito: true, prioridade: data.tipo === "urgencia" ? "alta" : "normal",
       detalhes_restritos: mascarar(data.resumo),
     });
     if (error) throw new Error("Não foi possível abrir o protocolo.");
+    await context.supabase.from("logs_acoes").insert({ user_id: context.userId, acao: data.tipo === "contestacao" ? "contestacao_aberta" : "protocolo_aberto" });
+    if (data.tipo !== "exclusao_conta") await context.supabase.from("logs_acoes").insert({ user_id: context.userId, acao: "encaminhamento" });
     return { restrito: true };
+  });
+
+export const registrarFeedback = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ util: z.boolean() }).parse(d))
+  .handler(async ({ data, context }) => {
+    // Sem texto da conversa: só a nota.
+    const { error } = await context.supabase.from("feedbacks").insert({ user_id: context.userId, nota: data.util ? 1 : 0 });
+    if (error) throw new Error("Não foi possível registrar a avaliação.");
+    await context.supabase.from("logs_acoes").insert({ user_id: context.userId, acao: "feedback_registrado" });
+    return { ok: true };
   });
