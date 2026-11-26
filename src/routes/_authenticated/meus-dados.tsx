@@ -7,6 +7,7 @@ import { PrivacyText } from "@/components/atena/PrivacyText";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const Route = createFileRoute("/_authenticated/meus-dados")({
   head: () => ({
@@ -66,6 +67,14 @@ function MeusDados() {
     recarregar();
   }
 
+  async function salvarPreferencia(valor: { canal_preferido?: string; nivel_linguagem?: string; lembretes_ativos?: boolean }) {
+    if (!data?.pref?.memoria_longa_ativa) return;
+    const { error } = await supabase.from("preferencias").update(valor).eq("user_id", userId).eq("memoria_longa_ativa", true);
+    if (error) { toast.error("Não foi possível salvar a preferência."); return; }
+    await registrarLog("preferencias_atualizadas");
+    await recarregar();
+  }
+
   async function baixar() {
     const tabelas = ["conversas", "mensagens", "feedbacks", "resumos_conversa", "preferencias"] as const;
     const res = await Promise.all(tabelas.map((t) => supabase.from(t).select("*").eq("user_id", userId)));
@@ -123,11 +132,26 @@ function MeusDados() {
           Desligado por padrão. Guarda só canal preferido, lembretes e nível de linguagem. Ao desligar, tudo é apagado.
         </p>
         {memAtiva && (
-          <ul className="mt-3 ml-6 list-disc text-lg">
-            <li>Canal preferido: {data?.pref?.canal_preferido ?? "—"}</li>
-            <li>Lembretes: {data?.pref?.lembretes_ativos == null ? "—" : data.pref.lembretes_ativos ? "ativos" : "desligados"}</li>
-            <li>Nível de linguagem: {data?.pref?.nivel_linguagem ?? "—"}</li>
-          </ul>
+          <div className="mt-5 grid gap-5 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="canal">Canal preferido</Label>
+              <Select value={data?.pref?.canal_preferido ?? ""} onValueChange={(canal_preferido) => salvarPreferencia({ canal_preferido })}>
+                <SelectTrigger id="canal"><SelectValue placeholder="Escolher canal" /></SelectTrigger>
+                <SelectContent><SelectItem value="chat">Chat</SelectItem><SelectItem value="e-mail">E-mail</SelectItem><SelectItem value="presencial">Presencial</SelectItem></SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="linguagem">Nível de linguagem</Label>
+              <Select value={data?.pref?.nivel_linguagem ?? ""} onValueChange={(nivel_linguagem) => salvarPreferencia({ nivel_linguagem })}>
+                <SelectTrigger id="linguagem"><SelectValue placeholder="Escolher linguagem" /></SelectTrigger>
+                <SelectContent><SelectItem value="simples">Simples</SelectItem><SelectItem value="detalhada">Detalhada</SelectItem></SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-3">
+              <Switch id="lembretes" checked={data?.pref?.lembretes_ativos ?? false} onCheckedChange={(lembretes_ativos) => salvarPreferencia({ lembretes_ativos })} />
+              <Label htmlFor="lembretes">Preferência por lembretes</Label>
+            </div>
+          </div>
         )}
       </section>
 
@@ -167,7 +191,10 @@ function MeusDados() {
 
       <section className="rounded-xl border-2 bg-card p-6">
         <h2 className="text-2xl font-bold">Mapa de dados</h2>
-        <div className="mt-3 overflow-x-auto">
+        <dl className="mt-4 space-y-5 sm:hidden">
+          {MAPA.map(([a, b, c]) => <div key={a} className="border-b pb-4"><dt className="font-bold">{a}</dt><dd className="mt-2">{b}</dd><dd className="mt-1 text-muted-foreground">{c}</dd></div>)}
+        </dl>
+        <div className="mt-3 hidden overflow-x-auto sm:block">
           <table className="w-full text-left text-base">
             <caption className="sr-only">O que é guardado, para quê e por quanto tempo</caption>
             <thead><tr className="border-b-2"><th scope="col" className="p-2">O que guardamos</th><th scope="col" className="p-2">Para quê</th><th scope="col" className="p-2">Por quanto tempo</th></tr></thead>
