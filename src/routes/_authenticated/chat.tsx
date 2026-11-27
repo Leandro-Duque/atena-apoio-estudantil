@@ -191,7 +191,7 @@ function Chat() {
         ) : (
           <article key={i.id} className="max-w-[95%] text-lg">
             <p className="text-sm font-bold text-secondary">Atena (IA)</p>
-            <div className="whitespace-pre-wrap">{i.conteudo || "Pensando…"}</div>
+            <div className="whitespace-pre-wrap">{(i.conteudo || "Pensando…").replace(/\*\*/g, "")}</div>
             {i.urgencia && i.urgencia !== "nenhum" && <Contatos destaque={i.urgencia === "iminente"} />}
             {i.pronto && !!i.fontes?.length && (
               <aside className="mt-3 rounded-lg border-l-4 border-secondary bg-muted p-3 text-base">
