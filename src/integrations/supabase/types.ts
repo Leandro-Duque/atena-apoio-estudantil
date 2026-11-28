@@ -35,6 +35,39 @@ export type Database = {
         }
         Relationships: []
       }
+      decisoes_design: {
+        Row: {
+          alternativas_descartadas: string
+          criado_em: string
+          criado_por: string | null
+          data: string
+          decisao: string
+          id: string
+          responsavel: string
+          riscos: string
+        }
+        Insert: {
+          alternativas_descartadas?: string
+          criado_em?: string
+          criado_por?: string | null
+          data?: string
+          decisao: string
+          id?: string
+          responsavel: string
+          riscos?: string
+        }
+        Update: {
+          alternativas_descartadas?: string
+          criado_em?: string
+          criado_por?: string | null
+          data?: string
+          decisao?: string
+          id?: string
+          responsavel?: string
+          riscos?: string
+        }
+        Relationships: []
+      }
       documentos_oficiais: {
         Row: {
           criado_em: string
@@ -182,8 +215,10 @@ export type Database = {
           email: string | null
           id: string
           matricula: string
+          modalidade: string | null
           nome: string
           semestre: string | null
+          turno: string | null
         }
         Insert: {
           aceite_privacidade_em?: string | null
@@ -192,8 +227,10 @@ export type Database = {
           email?: string | null
           id: string
           matricula?: string
+          modalidade?: string | null
           nome?: string
           semestre?: string | null
+          turno?: string | null
         }
         Update: {
           aceite_privacidade_em?: string | null
@@ -202,8 +239,10 @@ export type Database = {
           email?: string | null
           id?: string
           matricula?: string
+          modalidade?: string | null
           nome?: string
           semestre?: string | null
+          turno?: string | null
         }
         Relationships: []
       }
@@ -239,7 +278,10 @@ export type Database = {
           criado_em: string
           detalhes_restritos: string | null
           id: string
+          prazo_resposta: string | null
           prioridade: string
+          respondido_em: string | null
+          resposta: string | null
           restrito: boolean
           resumo: string
           setor: string
@@ -251,7 +293,10 @@ export type Database = {
           criado_em?: string
           detalhes_restritos?: string | null
           id?: string
+          prazo_resposta?: string | null
           prioridade?: string
+          respondido_em?: string | null
+          resposta?: string | null
           restrito?: boolean
           resumo: string
           setor: string
@@ -263,7 +308,10 @@ export type Database = {
           criado_em?: string
           detalhes_restritos?: string | null
           id?: string
+          prazo_resposta?: string | null
           prioridade?: string
+          respondido_em?: string | null
+          resposta?: string | null
           restrito?: boolean
           resumo?: string
           setor?: string
@@ -365,6 +413,8 @@ export type Database = {
         Returns: boolean
       }
       mascarar_texto: { Args: { t: string }; Returns: string }
+      painel_equidade: { Args: never; Returns: Json }
+      painel_indicadores: { Args: never; Returns: Json }
       pertence_setor: {
         Args: { _setor: string; _user_id: string }
         Returns: boolean
@@ -372,6 +422,10 @@ export type Database = {
       salvar_resumo_seguro: {
         Args: { _conversa_id: string; _temas: string[] }
         Returns: undefined
+      }
+      somar_dias_uteis: {
+        Args: { _inicio: string; _n: number }
+        Returns: string
       }
     }
     Enums: {

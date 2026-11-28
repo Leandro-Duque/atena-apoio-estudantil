@@ -41,7 +41,7 @@ function MeusDados() {
       const [perfil, resumos, protocolos, pref] = await Promise.all([
         supabase.from("perfis").select("*").eq("id", userId).maybeSingle(),
         supabase.from("resumos_conversa").select("*").eq("user_id", userId).order("criado_em", { ascending: false }),
-        supabase.from("protocolos").select("id,user_id,tipo,status,setor,resumo,criado_em,restrito").eq("user_id", userId).order("criado_em", { ascending: false }),
+        supabase.from("protocolos").select("id,user_id,tipo,status,setor,resumo,criado_em,restrito,resposta,respondido_em,prazo_resposta").eq("user_id", userId).order("criado_em", { ascending: false }),
         supabase.from("preferencias").select("*").eq("user_id", userId).maybeSingle(),
       ]);
       return { perfil: perfil.data, resumos: resumos.data ?? [], protocolos: protocolos.data ?? [], pref: pref.data };
@@ -80,7 +80,7 @@ function MeusDados() {
     const res = await Promise.all(tabelas.map((t) => supabase.from(t).select("*").eq("user_id", userId)));
     const perfil = await supabase.from("perfis").select("*").eq("id", userId);
     if (perfil.error || res.some((r) => r.error)) { toast.error("Não foi possível baixar todos os dados. Tente novamente."); return; }
-    const protocolos = await supabase.from("protocolos").select("id,user_id,tipo,status,setor,resumo,criado_em,restrito").eq("user_id", userId);
+    const protocolos = await supabase.from("protocolos").select("id,user_id,tipo,status,setor,resumo,criado_em,restrito,resposta,respondido_em,prazo_resposta").eq("user_id", userId);
     const logs = await supabase.from("logs_acoes").select("*").eq("user_id", userId);
     if (protocolos.error || logs.error) { toast.error("Não foi possível baixar todos os dados."); return; }
     const out: Record<string, unknown> = { perfil: perfil.data, protocolos: protocolos.data, logs_acoes: logs.data };
@@ -183,6 +183,7 @@ function MeusDados() {
               <li key={pr.id} className="rounded-lg bg-muted p-3">
                 <strong>{pr.tipo}</strong> – {pr.setor} – status: {pr.status}{pr.restrito && " (restrito)"}
                 <br /><span className="text-muted-foreground">{new Date(pr.criado_em).toLocaleString("pt-BR")}</span>
+                {pr.resposta && <p className="mt-2 rounded bg-card p-2"><strong>Resposta da equipe:</strong> {pr.resposta}</p>}
               </li>
             ))}
           </ul>
